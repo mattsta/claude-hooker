@@ -1,0 +1,96 @@
+# Install one exact Zig, with no JavaScript in the way.
+#
+# This exists because the marketplace action this repository used to call
+# (mlugg/setup-zig) still declares the deprecated node20 runtime — on current
+# runners every job prints a deprecation warning that nothing in this tree can
+# fix. A composite action is plain bash: there is no Node runtime to deprecate,
+# and every line of it is in this repository where an audit can reach it.
+#
+# The trust shape: the tarball's *name and SHA256* always come from
+# ziglang.org's own index.json. The *bytes* may come from a community mirror —
+# ziglang.org asks CI not to hammer the origin — but a mirror that serves the
+# wrong bytes fails the hash check and the next candidate is tried, with the
+# origin itself as the final fallback. So a mirror can slow the download down;
+# it cannot substitute a toolchain.
+
+name: install pinned Zig
+description: Download an exact Zig release, verify its SHA256 against ziglang.org, and put it on PATH.
+
+inputs:
+  version:
+    description: The exact Zig version to install (asserted elsewhere against build.zig.zon).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: download, verify, install
+      shell: bash
+      env:
+        ZIG_WANTED: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+
+        case "$(uname -s)/$(uname -m)" in
+          Linux/x86_64)  target="x86_64-linux" ;;
+          Linux/aarch64) target="aarch64-linux" ;;
+          Darwin/arm64)  target="aarch64-macos" ;;
+          Darwin/x86_64) target="x86_64-macos" ;;
+          *) echo "::error::no Zig target mapping for $(uname -s)/$(uname -m)"; exit 1 ;;
+        esac
+
+        work="${RUNNER_TEMP}/install-zig"
+        mkdir -p "${work}"
+        cd "${work}"
+
+        # The authority: name + hash from the origin, and only from the origin.
+        curl -fsSL --retry 3 -o index.json "https://ziglang.org/download/index.json"
+        tarball=$(jq -er --arg v "${ZIG_WANTED}" --arg t "${target}" '.[$v][$t].tarball' index.json) \
+          || { echo "::error::ziglang.org's index has no ${target} tarball for Zig ${ZIG_WANTED}"; exit 1; }
+        shasum_expected=$(jq -er --arg v "${ZIG_WANTED}" --arg t "${target}" '.[$v][$t].shasum' index.json)
+        filename="${tarball##*/}"
+
+        # Compute the digest and compare the string — never a checker mode.
+        # macOS 26 runner images ship a BSD `sha256sum` whose flags are not
+        # GNU's (`-c --status` is a usage error there), so any branch on which
+        # checker exists picks wrong somewhere. Every platform's tool prints
+        # the digest first; that is the whole contract this relies on.
+        verify() {
+          actual=$(
+            { shasum -a 256 "${filename}" 2>/dev/null || sha256sum "${filename}"; } \
+              | cut -d' ' -f1
+          )
+          if [ "${actual}" != "${shasum_expected}" ]; then
+            echo "  SHA256 mismatch: got ${actual}, ziglang.org says ${shasum_expected}"
+            return 1
+          fi
+        }
+
+        # The bytes: a few mirrors in a random order, then the origin. Shuffled
+        # so this workflow does not elect one community mirror as its CDN.
+        candidates=$(
+          { curl -fsSL --retry 2 "https://ziglang.org/download/community-mirrors.txt" || true; } \
+            | awk -v seed="${RANDOM}" 'BEGIN { srand(seed) } NF { print rand() "\t" $0 }' \
+            | sort -n | cut -f2- | head -3 \
+            | sed "s|\$|/${filename}?source=github-actions-ci|"
+        )
+        got=""
+        while IFS= read -r url; do
+          [ -n "${url}" ] || continue
+          echo "trying ${url%%\?*}"
+          if curl -fsSL --retry 2 -o "${filename}" "${url}" && verify; then
+            got="${url}"
+            break
+          fi
+          rm -f "${filename}"
+        done < <(printf '%s\n' "${candidates}" "${tarball}")
+        if [ -z "${got}" ]; then
+          echo "::error::could not fetch a Zig ${ZIG_WANTED} ${target} tarball whose SHA256 matches ziglang.org's index"
+          exit 1
+        fi
+
+        install_dir="${RUNNER_TEMP}/zig-${ZIG_WANTED}"
+        mkdir -p "${install_dir}"
+        tar -xJf "${filename}" -C "${install_dir}" --strip-components=1
+        echo "${install_dir}" >> "${GITHUB_PATH}"
+        echo "installed $("${install_dir}/zig" version) from ${got%%\?*}"

@@ -1,0 +1,8 @@
+zig-out/
+.zig-cache/
+
+# The runner is a Python package now (tools/hookctl), so running it leaves
+# bytecode caches next to the source. They are per-interpreter and never
+# committed — the tree must stay clone-and-build with nothing generated in it.
+__pycache__/
+*.pyc

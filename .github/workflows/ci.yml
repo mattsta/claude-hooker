@@ -1,0 +1,139 @@
+# The whole gate, on both platforms that matter.
+#
+# Why this exists at all: Zig is pre-1.0 and breaks between releases, and this
+# code is POSIX-only but has only ever been *run* on macOS — while the machines
+# it gates commands on are mostly Linux. Both halves of that are portability
+# risk that only a second operating system can find, so every job here runs the
+# same two commands (`./hookctl verify`, `./hookctl audit`) on ubuntu-latest and
+# macos-latest, and the Zig toolchain is pinned to an exact version rather than
+# tracking master.
+#
+# There is nothing to publish. This project is built when it is cloned: no
+# prebuilt binaries, no release artifacts, no checksums. So there is no upload
+# step, and a green run means exactly one thing — a fresh clone works.
+
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # The pin. Asserted against `build.zig.zon`'s `minimum_zig_version` below, so
+  # bumping one and forgetting the other fails the build instead of silently
+  # testing a toolchain nobody was told to install.
+  ZIG_VERSION: "0.16.0"
+  # The parity oracle is Python's `shlex`, and the corpus is genuinely non-ASCII
+  # (Japanese, accents, an emoji). Python's stdout encoding is locale-derived,
+  # which is always UTF-8 on macOS and `ascii` under a C locale on Linux — the
+  # exact asymmetry that makes a step pass on a laptop and fail on a runner.
+  # The scripts force UTF-8 themselves; this is the belt to that braces.
+  PYTHONUTF8: "1"
+  LANG: C.UTF-8
+
+jobs:
+  gate:
+    name: gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Both platforms always report. A Linux-only failure is the most valuable
+      # signal this workflow can produce, and cancelling its sibling would hide
+      # whether the break is portability or a plain bug.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      # The parity oracle calls the stdlib `shlex` as a differential reference,
+      # and its output is compared byte for byte against a checked-in file. That
+      # makes the interpreter part of the fixture: pin it to one minor version on
+      # both platforms, or a `shlex` behaviour change between 3.12 and 3.13 shows
+      # up as a lexer failure on one runner and not the other.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # A local composite action, not the marketplace one: mlugg/setup-zig still
+      # runs on the deprecated node20 runtime, which every current runner flags.
+      # This one is plain bash — no Node runtime to deprecate — and it verifies
+      # the tarball's SHA256 against ziglang.org's own index.
+      - uses: ./.github/actions/install-zig
+        with:
+          version: ${{ env.ZIG_VERSION }}
+
+      # The pin has to be the version the build requires. The runner's
+      # `tools/hookctl/spec.py` is checked against the same field by a unit test
+      # (see "the minimum Zig version is written down once"); this is the third
+      # copy, which no test can reach.
+      - name: the pinned Zig matches build.zig.zon
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=$(sed -n 's/.*\.minimum_zig_version = "\([^"]*\)".*/\1/p' build.zig.zon)
+          echo "build.zig.zon requires: ${required}"
+          echo "this workflow pins:     ${ZIG_VERSION}"
+          if [ "${required}" != "${ZIG_VERSION}" ]; then
+            echo "::error::ZIG_VERSION (${ZIG_VERSION}) is not build.zig.zon's minimum_zig_version (${required}) — bump both."
+            exit 1
+          fi
+          installed=$(zig version)
+          echo "the runner installed:   ${installed}"
+          if [ "${installed}" != "${ZIG_VERSION}" ]; then
+            echo "::error::setup-zig installed ${installed}, not the pinned ${ZIG_VERSION}."
+            exit 1
+          fi
+          python3 --version
+
+      # `verify` is the pre-commit gate: unit tests, both binaries, the shlex
+      # parity oracle, and the documentation checks. Run from the repository root
+      # because the test binaries read `build.zig.zon`, `tools/hookctl/spec.py`
+      # and the fixtures by repo-relative path.
+      - name: ./hookctl verify
+        run: ./hookctl verify
+
+      # `audit` re-runs every mechanical consistency check WITH ITS COUNTS. The
+      # numbers are the point: a green tick says nothing broke, the counts say
+      # how much is still being asserted, which is what makes a quiet slide back
+      # toward hand-maintained lists visible in a log.
+      - name: ./hookctl audit
+        run: ./hookctl audit
+
+      # The user story, end to end, on a runner: clone the checkout into a fresh
+      # directory and gate it with nothing but a toolchain. This is the claim the
+      # README makes — clone, `./hookctl setup`, works — and it is the one thing
+      # a CI run of the working tree cannot prove on its own, because the working
+      # tree has a `.zig-cache` and untracked files that a clone does not.
+      - name: a fresh clone builds and installs
+        shell: bash
+        run: |
+          set -euo pipefail
+          clone="${RUNNER_TEMP}/fresh-clone"
+          git clone --quiet . "${clone}"
+          cd "${clone}"
+          ./hookctl verify
+          # A sandboxed install: --claude-dir moves the whole install, so this
+          # never touches the runner's own ~/.claude.
+          ./hookctl setup --claude-dir "${RUNNER_TEMP}/claude-sandbox"
+          ./hookctl doctor --claude-dir "${RUNNER_TEMP}/claude-sandbox"
+
+  # Compile for the Linux targets a release would land on, from one runner. This
+  # catches the class of break that is a std API which does not exist on the
+  # other platform, cheaply and without a second runner per architecture. The
+  # test modules are compiled too — test-only code is only analyzed in a test
+  # build, and that is exactly where a Darwin-only assumption hides.
+  cross:
+    name: cross-compile for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/install-zig
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: ./hookctl cross
+        run: ./hookctl cross

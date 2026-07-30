@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.2",
+  "rules": [
+    {
+      "name": "no-process-killer",
+      "decision": "deny",
+      "reason": "A pattern-matching process killer takes down anything whose command line happens to match, including this session and unrelated work on the same machine. Find the process first (`ps aux | grep '[m]yserver'`) and kill the PID you actually meant.",
+      "match": [ { "kind": "command_word", "value": "pkill" } ]
+    },
+    {
+      "name": "no-recursive-force-delete",
+      "decision": "deny",
+      "reason": "A recursive forced delete has no undo and no confirmation, and the option set is what matters rather than how it was spelled: `-rf`, `-fr`, `-vrf`, `-r -f`, `-R -f` and `--recursive --force` are one command. Name the directory you created (`rm -rf ./build`), and if the flags arrived through a variable, write them out so the next reader can see what they do.",
+      "match_all": [
+        {
+          "invocation": [
+            { "kind": "command_word", "value": "rm" },
+            { "kind": "flags", "value": "r|R|--recursive f|--force" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "no-destructive-sql",
+      "decision": "deny",
+      "reason": "DROP TABLE against a live database is unrecoverable without a restore, and the argument arrived quoted so nothing textual would have caught it. Write the change as a reversible migration and run it through the project's migration harness.",
+      "match": [ { "kind": "argv", "value": "DROP TABLE" } ]
+    },
+    {
+      "name": "no-git-add-all-anywhere",
+      "decision": "deny",
+      "reason": "`git add -A` sweeps in unintended files (secrets, temp files, generated artifacts), and wrapping it in `bash -lc` or a subshell does not change that. Stage paths explicitly with `git add <path> ...`, or `git add -u` for tracked-only changes.",
+      "match": [ { "kind": "command_line", "value": "git add -A" } ]
+    },
+    {
+      "name": "watch-opaque-commands",
+      "decision": "log",
+      "reason": "Observational only — this call is NOT blocked. The command text does not say what it will run: the command word is a variable nothing in the text assigns, or the program arrives through `eval` or a decoder. Recorded so the operator can see how often that shape occurs before deciding whether it warrants a prompt.",
+      "match": [ { "kind": "signal", "value": "opaque_command" } ]
+    },
+    {
+      "name": "echoing-a-command-name-is-fine",
+      "decision": "allow",
+      "reason": "Pre-approved: naming a command inside an `echo` is documentation, not execution, and this rule exists so the structural matchers have something to prove they are structural.",
+      "match_all": [
+        { "kind": "command_word", "value": "echo" },
+        { "kind": "argv", "value": "pkill" }
+      ]
+    }
+  ],
+  "tests": [
+    { "command": "bash -lc \"pkill -f myserver\"", "expect": "deny", "expect_rule": "no-process-killer" },
+    { "command": "sudo pkill -9 myserver", "expect": "deny", "expect_rule": "no-process-killer" },
+    { "command": "P=pki; K=ll; $P$K -f myserver", "expect": "deny", "expect_rule": "no-process-killer" },
+    { "command": "X=-rf; rm $X /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "rm -vrf /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "rm -R -f /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "rm -fr /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "rm --recursive --force /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "rm -r -f /var/lib/thing", "expect": "deny", "expect_rule": "no-recursive-force-delete" },
+    { "command": "tar -xzf archive.tgz", "expect": "none" },
+    { "command": "tar -rf archive.tar ./notes", "expect": "none" },
+    { "command": "tar -xzf archive.tgz && rm -r ./build", "expect": "none" },
+    { "command": "psql -c \"DROP TABLE users\"", "expect": "deny", "expect_rule": "no-destructive-sql" },
+    { "command": "bash -lc 'cd /repo && git add -A && git commit -m wip'", "expect": "deny", "expect_rule": "no-git-add-all-anywhere" },
+    { "command": "echo pkill is bad", "expect": "allow", "expect_rule": "echoing-a-command-name-is-fine" },
+    { "command": "git add src/main.zig", "expect": "none" },
+    { "command": "rm -r ./build", "expect": "none" },
+    { "command": "psql -c 'SELECT count(*) FROM users'", "expect": "none" },
+    {
+      "generate": {
+        "command": "rm {flags} /var/lib/thing",
+        "axes": [
+          {
+            "name": "flags",
+            "values": ["-rf", "-fr", "-vrf", "-r -f", "-f -r", "-Rf", "-R -f", "--recursive --force", "-r --force"]
+          }
+        ],
+        "near_miss": [
+          { "name": "flags", "values": ["-r", "-f", "-v", "-i"] }
+        ]
+      },
+      "expect": "deny",
+      "expect_rule": "no-recursive-force-delete"
+    }
+  ]
+}

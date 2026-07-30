@@ -1,0 +1,23 @@
+# One lint configuration, so `ruff check` means the same thing on every
+# machine and in CI. The selection is the modernization set this repository
+# holds itself to on top of ruff's defaults; the target pins how far `UP`
+# may modernize, and must match `MIN_PYTHON` in tools/hookctl/spec.py.
+target-version = "py311"
+
+[lint]
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",    # defaults, kept explicit because `select` replaces them
+    "I",    # import order
+    "UP",   # pyupgrade, bounded by target-version above
+    "SIM",  # simplifications
+    "PTH",  # pathlib over os.path
+    "FURB", # modernisms
+    "PGH",  # pygrep hooks (blanket noqa/type-ignore bans)
+]
+ignore = [
+    "SIM102", # collapsing nested ifs can bury the guard that matters
+    "SIM110", # a spelled-out loop often reads better than any()/all()
+]

@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.2",
+  "logging": { "enabled": true, "log_commands": false },
+  "rules": [
+    {
+      "name": "watch-git",
+      "tool": "Bash",
+      "decision": "log",
+      "reason": "Observational only: records that a git command was proposed so the operator can see the volume before tightening anything.",
+      "match": [
+        { "kind": "word", "value": "git" }
+      ]
+    },
+    {
+      "name": "no-git-add-all",
+      "tool": "Bash",
+      "decision": "deny",
+      "reason": "git add -A sweeps in unintended files. Stage paths explicitly with `git add <path> ...`.",
+      "match": [
+        { "kind": "tokens", "value": "git add -A" },
+        { "kind": "tokens", "value": "git add --all" }
+      ],
+      "match_none": [
+        { "kind": "substring", "value": "--dry-run" }
+      ]
+    },
+    {
+      "name": "ask-force-push",
+      "tool": "Bash",
+      "decision": "ask",
+      "reason": "Force pushes rewrite shared history; confirm before rewriting a branch someone else may have pulled.",
+      "match": [
+        { "kind": "substring", "value": "push --force" }
+      ]
+    },
+    {
+      "name": "protect-hook-config",
+      "tool": "*",
+      "decision": "deny",
+      "reason": "The gate's own policy files are operator-owned: a gate that can rewrite its own rules is not a gate.",
+      "match": [
+        { "kind": "substring", "field": "file_path", "value": "hook-rules.json" },
+        { "kind": "substring", "field": "file_path", "value": ".claude/settings.json" }
+      ]
+    },
+    {
+      "name": "secret-in-content",
+      "tool": "Write",
+      "decision": "deny",
+      "reason": "Credentials do not belong in tracked files; read the value from the environment or a secret store instead.",
+      "match": [
+        { "kind": "word", "field": "content", "value": "AWS_SECRET_ACCESS_KEY" }
+      ]
+    },
+    {
+      "name": "block-prompt-secret",
+      "event": "UserPromptSubmit",
+      "decision": "deny",
+      "reason": "The prompt carries a credential; send the name of the secret rather than its value.",
+      "match": [
+        { "kind": "word", "field": "prompt", "value": "AWS_SECRET_ACCESS_KEY" }
+      ]
+    },
+    {
+      "name": "block-unfinished-stop",
+      "event": "Stop",
+      "decision": "deny",
+      "reason": "The turn ended with the word TODO in the summary; finish it or say what is left.",
+      "match_all": [
+        { "kind": "word", "field": "message", "value": "TODO" },
+        { "kind": "word", "field": "trigger", "value": "end_turn" }
+      ]
+    },
+    {
+      "name": "watch-tool-failure",
+      "event": "PostToolUseFailure",
+      "tool": "Bash",
+      "decision": "log",
+      "reason": "Observational only: records a command that failed with a permission error, which is usually a sign the task needs a different approach rather than a retry.",
+      "match": [
+        { "kind": "substring", "field": "output", "value": "Permission denied" }
+      ]
+    },
+    {
+      "name": "watch-subagent-finish",
+      "event": "SubagentStop",
+      "decision": "log",
+      "reason": "Observational only: records which subagent types finish, so the operator can see the shape of the delegation before scoping any rule to one.",
+      "match": [
+        { "kind": "word", "field": "agent", "value": "Explore" }
+      ]
+    },
+    {
+      "name": "watch-watched-file",
+      "event": "FileChanged",
+      "decision": "log",
+      "reason": "Observational only, and it could not be anything else: FileChanged is advisory, so a deny here would be a rule the harness ignores.",
+      "match": [
+        { "kind": "substring", "field": "file_path", "value": ".envrc" }
+      ]
+    }
+  ],
+  "tests": [
+    { "command": "git add -A", "expect": "deny", "expect_rule": "no-git-add-all" },
+    { "command": "cd /repo && git   add --all && git commit", "expect": "deny", "expect_rule": "no-git-add-all" },
+    { "command": "git add -A --dry-run", "expect": "none" },
+    { "command": "git add README.md", "expect": "none" },
+    { "command": "git push --force origin main", "expect": "ask", "expect_rule": "ask-force-push" },
+    { "command": "ls -la", "expect": "none" },
+    {
+      "input": { "tool": "Write", "file_path": "/home/u/.claude/settings.json", "content": "{}" },
+      "expect": "deny",
+      "expect_rule": "protect-hook-config"
+    },
+    {
+      "input": { "tool": "Edit", "file_path": "/home/u/.claude/hook-rules.json", "content": "[]" },
+      "expect": "deny",
+      "expect_rule": "protect-hook-config"
+    },
+    {
+      "input": { "tool": "Write", "file_path": "/repo/app.py", "content": "AWS_SECRET_ACCESS_KEY = 'x'" },
+      "expect": "deny",
+      "expect_rule": "secret-in-content"
+    },
+    {
+      "input": { "tool": "Write", "file_path": "/repo/README.md", "content": "hello" },
+      "expect": "none"
+    },
+
+    {
+      "input": { "event": "UserPromptSubmit", "prompt": "set AWS_SECRET_ACCESS_KEY to abc123" },
+      "expect": "deny",
+      "expect_rule": "block-prompt-secret"
+    },
+    {
+      "input": { "event": "UserPromptSubmit", "prompt": "which env var holds the key?" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "Stop", "message": "wired it up, left a TODO in main.zig", "trigger": "end_turn" },
+      "expect": "deny",
+      "expect_rule": "block-unfinished-stop"
+    },
+    {
+      "input": { "event": "Stop", "message": "left a TODO", "trigger": "max_tokens" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "Stop", "message": "all done", "trigger": "end_turn" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "PostToolUseFailure", "tool": "Bash", "command": "cat /etc/shadow", "output": "cat: /etc/shadow: Permission denied" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "SubagentStop", "agent": "Explore", "message": "found it" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "FileChanged", "file_path": "/repo/.envrc", "trigger": "modified" },
+      "expect": "none"
+    },
+    {
+      "input": { "event": "PreToolUse", "tool": "Bash", "command": "echo TODO" },
+      "expect": "none"
+    }
+  ]
+}

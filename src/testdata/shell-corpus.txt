@@ -1,0 +1,259 @@
+## Shell lexer parity corpus.
+##
+## One command per line. A line beginning with `##` is a comment; empty lines
+## are skipped. The two-character sequence \N stands for a newline byte, so a
+## single corpus line can carry a multi-line command; every other backslash is
+## passed through untouched.
+##
+## Everything above the %%DIVERGENT marker is asserted word-for-word against
+## `shlex.split(line, posix=True)` — see tests/shlex_oracle.py, which turns
+## this file into src/testdata/shell-oracle.jsonl, and the "shlex parity"
+## test in src/shell.zig, which asserts against that.
+##
+## Lines that shlex REJECTS (an unterminated quote, a dangling escape) are
+## still part of the asserted section: the oracle records the exception and
+## the test asserts we set the matching signal instead of crashing.
+##
+## Below the marker are the cases where this lexer deliberately implements
+## POSIX shell and shlex does not. Each one carries the reason.
+
+## --- ordinary commands ---
+ls
+ls -la
+echo hello world
+/usr/bin/env
+./script.sh arg1 arg2
+git status
+make -j4 all
+printf %s done
+tar -xzf archive.tar.gz -C /tmp
+curl -sSL https://example.com/path?a=1
+grep -rn TODO src
+cp -r a/b/c d/e/f
+python3 script.py --flag value
+node --experimental-vm-modules test.js
+cargo build --release --target x86_64-unknown-linux-gnu
+zig build test
+rm -rf ./build
+mv old.txt new.txt
+systemctl status nginx
+journalctl -u nginx -n 100
+ps aux
+df -h /
+du -sh .
+head -n 20 file.txt
+tail -f /var/log/syslog
+wc -l file.txt
+sort -u list.txt
+uniq -c
+cut -d: -f1 /etc/passwd
+tr a-z A-Z
+date +%Y-%m-%d
+rsync -av --delete src/ dst/
+kubectl get pods --all-namespaces
+/usr/local/bin/tool --help
+ls ~/Documents
+ls ../parent
+ls ./relative
+cat /etc/hosts
+
+## --- single quotes ---
+echo 'hello world'
+echo 'it is'
+echo ''
+echo 'a b  c'
+sed 's/a/b/g' file.txt
+echo 'quoted "double" inside'
+echo 'tab	inside'
+echo 'back\slash'
+echo '\'
+echo ' '
+awk '{print $1}' file
+jq '.a.b' file.json
+find . -name '*.txt' -type f
+grep 'ñ' file.txt
+echo 'don'\''t'
+echo '$notexpanded'
+
+## --- double quotes ---
+echo "hello world"
+echo ""
+echo "a  b"
+echo "it's"
+echo "say \"hi\""
+echo "back\\slash"
+echo "keep\nliteral"
+echo "path/to/file"
+echo "$HOME/bin"
+echo "${VAR}"
+echo "a\"b"
+echo "\\"
+echo "  leading"
+echo "	"
+echo "multi word arg" second
+printf "%s\n" value
+echo "--flag=with space"
+ls "/path with spaces/file"
+psql -c "DROP TABLE users"
+mysql -e "SELECT 1"
+curl -H "Content-Type: application/json" https://api.example.com
+
+## --- adjacent quotes: concatenation ---
+echo a"b"c
+echo 'a'"b"'c'
+echo pre"fix"post
+echo ""empty
+echo x''y
+echo "a"'b'"c"d
+echo abc"def"
+echo "abc"def
+echo ''''
+echo a''b
+echo a'b'c'd'e
+echo ""''""
+echo x"y z"w
+echo "a b"'c d'
+echo "'"
+echo '"'
+
+## --- empty arguments ---
+cmd '' ''
+cmd "" x
+test -z ""
+echo "" ""
+
+## --- backslash escapes outside quotes ---
+echo a\ b
+echo \$HOME
+echo \'quoted\'
+echo \\
+echo a\"b
+echo one\ two three
+cp file\ name.txt dest
+echo \a
+echo x\ty
+\ls
+
+## --- unicode ---
+echo héllo wörld
+echo "日本語 テスト"
+echo 'Ünïcödé'
+echo café-naïve
+echo "emoji 🎉 here"
+echo ✓ ✗
+
+## --- whitespace forms ---
+echo   spaced    out
+	echo leading-tab
+echo	tab	separated
+
+## --- embedded newlines ---
+echo a\Nb
+echo "line1\Nline2"
+echo 'l1\Nl2'
+cmd one\Ncmd two
+
+## --- expansions, passed through unevaluated ---
+echo $VAR
+echo $VAR/path
+echo a$VAR b
+echo "$@"
+echo "$1 $2"
+echo $-
+echo ${#arr}
+echo key=value
+FOO=bar echo hi
+A=1 B=2 env
+echo --flag=value
+echo -- --literal
+echo -n
+
+## --- `#` away from a word boundary is an ordinary byte ---
+echo a#b
+echo x#y#z
+
+## --- wrappers (parity is over the outer word split only) ---
+bash -lc "echo hi"
+sh -c 'ls -la'
+zsh -ic "true"
+env A=1 B=2 sh
+timeout 5 sleep 1
+sudo -u www ls
+nohup sleep 100
+nice -n 10 make
+uv run python -m pytest
+npx prettier --write .
+git -C /repo status
+watch -n 5 df -h
+ssh host "uptime"
+docker run --rm -it alpine sh
+xargs -0 rm
+command ls
+sed -e 's/x/y/' -e 's/a/b/' f
+awk -F: '{print $1}' /etc/passwd
+find . -name "*.zig"
+jq -r '.items[] | .name' f.json
+
+## --- shlex rejects these; we return a partial word plus a signal ---
+echo "unterminated
+echo 'unterminated
+echo "mixed 'quotes
+echo one "two three
+echo trailing\
+
+%%DIVERGENT
+
+## Everything below is a DELIBERATE divergence from shlex. shlex.split is a
+## word splitter with no grammar: it has no operators, no pipelines, no
+## substitutions, no comments and no ANSI-C quoting, and (by design, since it
+## is not a shell) it processes backslashes inside double quotes differently
+## from POSIX. Assertions for these live in src/shell.zig's own tests.
+
+## Operators. shlex emits `|`, `;`, `&&`, `>` and `2>&1` as ordinary word
+## bytes; we split pipeline stages on them and attach redirections.
+echo a | grep b
+ls; pwd
+a && b
+a || b
+cat f > out
+cat f >> out
+cmd 2>&1
+cmd &> all.log
+sleep 1 &
+cmd1 && cmd2 | cmd3
+(cd /x && ls)
+{ ls; }
+
+## Command substitution. shlex splits `$(date +%s)` into `$(date` and `+%s)`;
+## we keep it as one word AND re-lex the inside as a nested command.
+echo $(date)
+echo $(date +%s)
+echo `hostname`
+echo "$(uname -a)"
+diff <(sort a) <(sort b)
+
+## ANSI-C quoting. shlex has no `$'...'` and yields a literal `$` plus the
+## quoted bytes; we decode the escapes.
+echo $'a\tb'
+echo $'line\nbreak'
+echo $'\x41\x42'
+
+## Backslash inside double quotes. POSIX makes `\` special before $ ` " \ and
+## newline only; shlex keeps the backslash before $ and ` as well.
+echo "a\$b"
+echo "a\`b"
+
+## Line continuation. POSIX removes backslash-newline everywhere; shlex turns
+## it into a literal newline inside the token.
+echo a\\Nb
+echo "a\\Nb"
+
+## Comments. shlex.split(comments=False) treats `#` as an ordinary byte; a
+## shell ends the line there.
+## comment-only line
+echo hi # trailing comment
+
+## Heredocs. shlex has no notion of one; we attach the body to the redirect.
+cat <<EOF\Nbody line\NEOF
+python3 <<PY\Nprint(1)\NPY
+cat <<<"here string"

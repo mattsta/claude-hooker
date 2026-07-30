@@ -1,0 +1,9 @@
+{"ts_unix":1750000000,"session_id":"s-1","tool":"Bash","rule":"no-pkill","decision":"deny","matcher":{"kind":"word","field":"command","value":"pkill"},"span":"pkill","command_logged":false}
+{"ts_unix":1750000600,"session_id":"s-1","tool":"Bash","rule":"no-pkill","decision":"deny","matcher":{"kind":"word","field":"command","value":"pkill"},"span":"pkill","command_logged":false}
+{"ts_unix":1750001200,"session_id":"s-2","tool":"Bash","rule":"no-git-add-all","decision":"deny","matcher":{"kind":"tokens","field":"command","value":"git add -A"},"span":"git add -A","command_logged":false}
+{"ts_unix":1750001800,"session_id":"s-2","tool":"Write","rule":"wrapper-script-shadow","decision":"log","matcher":{"kind":"word","field":"content","value":"pkill"},"span":"pkill","command_logged":false}
+this line is not JSON and must be counted as skipped
+{"ts_unix":1750002400,"session_id":"s-3","tool":"Bash","rule":"ask-force-push","decision":"ask","matcher":{"kind":"substring","field":"command","value":"push --force"},"span":"push --force","command_logged":false}
+{"ts_unix":1750003000,"session_id":"s-3","tool":"Write","rule":"wrapper-script-shadow","decision":"log","matcher":{"kind":"word","field":"content","value":"pkill"},"span":"pkill","command_logged":false}
+{"ts_unix":1750003600,"session_id":"s-4","tool":"Bash","rule":"no-pkill","decision":"bypassed","matcher":{"kind":"word","field":"command","value":"pkill"},"span":"pkill","command_logged":false}
+{"ts_unix":1750003000,"session_id":"s-4","tool":"Bash","rule":"no-git-add-all","decision":

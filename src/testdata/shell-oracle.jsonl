@@ -1,0 +1,186 @@
+{"input": "ls", "n": 1, "section": "core", "words": ["ls"]}
+{"input": "ls -la", "n": 2, "section": "core", "words": ["ls", "-la"]}
+{"input": "echo hello world", "n": 3, "section": "core", "words": ["echo", "hello", "world"]}
+{"input": "/usr/bin/env", "n": 4, "section": "core", "words": ["/usr/bin/env"]}
+{"input": "./script.sh arg1 arg2", "n": 5, "section": "core", "words": ["./script.sh", "arg1", "arg2"]}
+{"input": "git status", "n": 6, "section": "core", "words": ["git", "status"]}
+{"input": "make -j4 all", "n": 7, "section": "core", "words": ["make", "-j4", "all"]}
+{"input": "printf %s done", "n": 8, "section": "core", "words": ["printf", "%s", "done"]}
+{"input": "tar -xzf archive.tar.gz -C /tmp", "n": 9, "section": "core", "words": ["tar", "-xzf", "archive.tar.gz", "-C", "/tmp"]}
+{"input": "curl -sSL https://example.com/path?a=1", "n": 10, "section": "core", "words": ["curl", "-sSL", "https://example.com/path?a=1"]}
+{"input": "grep -rn TODO src", "n": 11, "section": "core", "words": ["grep", "-rn", "TODO", "src"]}
+{"input": "cp -r a/b/c d/e/f", "n": 12, "section": "core", "words": ["cp", "-r", "a/b/c", "d/e/f"]}
+{"input": "python3 script.py --flag value", "n": 13, "section": "core", "words": ["python3", "script.py", "--flag", "value"]}
+{"input": "node --experimental-vm-modules test.js", "n": 14, "section": "core", "words": ["node", "--experimental-vm-modules", "test.js"]}
+{"input": "cargo build --release --target x86_64-unknown-linux-gnu", "n": 15, "section": "core", "words": ["cargo", "build", "--release", "--target", "x86_64-unknown-linux-gnu"]}
+{"input": "zig build test", "n": 16, "section": "core", "words": ["zig", "build", "test"]}
+{"input": "rm -rf ./build", "n": 17, "section": "core", "words": ["rm", "-rf", "./build"]}
+{"input": "mv old.txt new.txt", "n": 18, "section": "core", "words": ["mv", "old.txt", "new.txt"]}
+{"input": "systemctl status nginx", "n": 19, "section": "core", "words": ["systemctl", "status", "nginx"]}
+{"input": "journalctl -u nginx -n 100", "n": 20, "section": "core", "words": ["journalctl", "-u", "nginx", "-n", "100"]}
+{"input": "ps aux", "n": 21, "section": "core", "words": ["ps", "aux"]}
+{"input": "df -h /", "n": 22, "section": "core", "words": ["df", "-h", "/"]}
+{"input": "du -sh .", "n": 23, "section": "core", "words": ["du", "-sh", "."]}
+{"input": "head -n 20 file.txt", "n": 24, "section": "core", "words": ["head", "-n", "20", "file.txt"]}
+{"input": "tail -f /var/log/syslog", "n": 25, "section": "core", "words": ["tail", "-f", "/var/log/syslog"]}
+{"input": "wc -l file.txt", "n": 26, "section": "core", "words": ["wc", "-l", "file.txt"]}
+{"input": "sort -u list.txt", "n": 27, "section": "core", "words": ["sort", "-u", "list.txt"]}
+{"input": "uniq -c", "n": 28, "section": "core", "words": ["uniq", "-c"]}
+{"input": "cut -d: -f1 /etc/passwd", "n": 29, "section": "core", "words": ["cut", "-d:", "-f1", "/etc/passwd"]}
+{"input": "tr a-z A-Z", "n": 30, "section": "core", "words": ["tr", "a-z", "A-Z"]}
+{"input": "date +%Y-%m-%d", "n": 31, "section": "core", "words": ["date", "+%Y-%m-%d"]}
+{"input": "rsync -av --delete src/ dst/", "n": 32, "section": "core", "words": ["rsync", "-av", "--delete", "src/", "dst/"]}
+{"input": "kubectl get pods --all-namespaces", "n": 33, "section": "core", "words": ["kubectl", "get", "pods", "--all-namespaces"]}
+{"input": "/usr/local/bin/tool --help", "n": 34, "section": "core", "words": ["/usr/local/bin/tool", "--help"]}
+{"input": "ls ~/Documents", "n": 35, "section": "core", "words": ["ls", "~/Documents"]}
+{"input": "ls ../parent", "n": 36, "section": "core", "words": ["ls", "../parent"]}
+{"input": "ls ./relative", "n": 37, "section": "core", "words": ["ls", "./relative"]}
+{"input": "cat /etc/hosts", "n": 38, "section": "core", "words": ["cat", "/etc/hosts"]}
+{"input": "echo 'hello world'", "n": 39, "section": "core", "words": ["echo", "hello world"]}
+{"input": "echo 'it is'", "n": 40, "section": "core", "words": ["echo", "it is"]}
+{"input": "echo ''", "n": 41, "section": "core", "words": ["echo", ""]}
+{"input": "echo 'a b  c'", "n": 42, "section": "core", "words": ["echo", "a b  c"]}
+{"input": "sed 's/a/b/g' file.txt", "n": 43, "section": "core", "words": ["sed", "s/a/b/g", "file.txt"]}
+{"input": "echo 'quoted \"double\" inside'", "n": 44, "section": "core", "words": ["echo", "quoted \"double\" inside"]}
+{"input": "echo 'tab\tinside'", "n": 45, "section": "core", "words": ["echo", "tab\tinside"]}
+{"input": "echo 'back\\slash'", "n": 46, "section": "core", "words": ["echo", "back\\slash"]}
+{"input": "echo '\\'", "n": 47, "section": "core", "words": ["echo", "\\"]}
+{"input": "echo ' '", "n": 48, "section": "core", "words": ["echo", " "]}
+{"input": "awk '{print $1}' file", "n": 49, "section": "core", "words": ["awk", "{print $1}", "file"]}
+{"input": "jq '.a.b' file.json", "n": 50, "section": "core", "words": ["jq", ".a.b", "file.json"]}
+{"input": "find . -name '*.txt' -type f", "n": 51, "section": "core", "words": ["find", ".", "-name", "*.txt", "-type", "f"]}
+{"input": "grep 'ñ' file.txt", "n": 52, "section": "core", "words": ["grep", "ñ", "file.txt"]}
+{"input": "echo 'don'\\''t'", "n": 53, "section": "core", "words": ["echo", "don't"]}
+{"input": "echo '$notexpanded'", "n": 54, "section": "core", "words": ["echo", "$notexpanded"]}
+{"input": "echo \"hello world\"", "n": 55, "section": "core", "words": ["echo", "hello world"]}
+{"input": "echo \"\"", "n": 56, "section": "core", "words": ["echo", ""]}
+{"input": "echo \"a  b\"", "n": 57, "section": "core", "words": ["echo", "a  b"]}
+{"input": "echo \"it's\"", "n": 58, "section": "core", "words": ["echo", "it's"]}
+{"input": "echo \"say \\\"hi\\\"\"", "n": 59, "section": "core", "words": ["echo", "say \"hi\""]}
+{"input": "echo \"back\\\\slash\"", "n": 60, "section": "core", "words": ["echo", "back\\slash"]}
+{"input": "echo \"keep\\nliteral\"", "n": 61, "section": "core", "words": ["echo", "keep\\nliteral"]}
+{"input": "echo \"path/to/file\"", "n": 62, "section": "core", "words": ["echo", "path/to/file"]}
+{"input": "echo \"$HOME/bin\"", "n": 63, "section": "core", "words": ["echo", "$HOME/bin"]}
+{"input": "echo \"${VAR}\"", "n": 64, "section": "core", "words": ["echo", "${VAR}"]}
+{"input": "echo \"a\\\"b\"", "n": 65, "section": "core", "words": ["echo", "a\"b"]}
+{"input": "echo \"\\\\\"", "n": 66, "section": "core", "words": ["echo", "\\"]}
+{"input": "echo \"  leading\"", "n": 67, "section": "core", "words": ["echo", "  leading"]}
+{"input": "echo \"\t\"", "n": 68, "section": "core", "words": ["echo", "\t"]}
+{"input": "echo \"multi word arg\" second", "n": 69, "section": "core", "words": ["echo", "multi word arg", "second"]}
+{"input": "printf \"%s\\n\" value", "n": 70, "section": "core", "words": ["printf", "%s\\n", "value"]}
+{"input": "echo \"--flag=with space\"", "n": 71, "section": "core", "words": ["echo", "--flag=with space"]}
+{"input": "ls \"/path with spaces/file\"", "n": 72, "section": "core", "words": ["ls", "/path with spaces/file"]}
+{"input": "psql -c \"DROP TABLE users\"", "n": 73, "section": "core", "words": ["psql", "-c", "DROP TABLE users"]}
+{"input": "mysql -e \"SELECT 1\"", "n": 74, "section": "core", "words": ["mysql", "-e", "SELECT 1"]}
+{"input": "curl -H \"Content-Type: application/json\" https://api.example.com", "n": 75, "section": "core", "words": ["curl", "-H", "Content-Type: application/json", "https://api.example.com"]}
+{"input": "echo a\"b\"c", "n": 76, "section": "core", "words": ["echo", "abc"]}
+{"input": "echo 'a'\"b\"'c'", "n": 77, "section": "core", "words": ["echo", "abc"]}
+{"input": "echo pre\"fix\"post", "n": 78, "section": "core", "words": ["echo", "prefixpost"]}
+{"input": "echo \"\"empty", "n": 79, "section": "core", "words": ["echo", "empty"]}
+{"input": "echo x''y", "n": 80, "section": "core", "words": ["echo", "xy"]}
+{"input": "echo \"a\"'b'\"c\"d", "n": 81, "section": "core", "words": ["echo", "abcd"]}
+{"input": "echo abc\"def\"", "n": 82, "section": "core", "words": ["echo", "abcdef"]}
+{"input": "echo \"abc\"def", "n": 83, "section": "core", "words": ["echo", "abcdef"]}
+{"input": "echo ''''", "n": 84, "section": "core", "words": ["echo", ""]}
+{"input": "echo a''b", "n": 85, "section": "core", "words": ["echo", "ab"]}
+{"input": "echo a'b'c'd'e", "n": 86, "section": "core", "words": ["echo", "abcde"]}
+{"input": "echo \"\"''\"\"", "n": 87, "section": "core", "words": ["echo", ""]}
+{"input": "echo x\"y z\"w", "n": 88, "section": "core", "words": ["echo", "xy zw"]}
+{"input": "echo \"a b\"'c d'", "n": 89, "section": "core", "words": ["echo", "a bc d"]}
+{"input": "echo \"'\"", "n": 90, "section": "core", "words": ["echo", "'"]}
+{"input": "echo '\"'", "n": 91, "section": "core", "words": ["echo", "\""]}
+{"input": "cmd '' ''", "n": 92, "section": "core", "words": ["cmd", "", ""]}
+{"input": "cmd \"\" x", "n": 93, "section": "core", "words": ["cmd", "", "x"]}
+{"input": "test -z \"\"", "n": 94, "section": "core", "words": ["test", "-z", ""]}
+{"input": "echo \"\" \"\"", "n": 95, "section": "core", "words": ["echo", "", ""]}
+{"input": "echo a\\ b", "n": 96, "section": "core", "words": ["echo", "a b"]}
+{"input": "echo \\$HOME", "n": 97, "section": "core", "words": ["echo", "$HOME"]}
+{"input": "echo \\'quoted\\'", "n": 98, "section": "core", "words": ["echo", "'quoted'"]}
+{"input": "echo \\\\", "n": 99, "section": "core", "words": ["echo", "\\"]}
+{"input": "echo a\\\"b", "n": 100, "section": "core", "words": ["echo", "a\"b"]}
+{"input": "echo one\\ two three", "n": 101, "section": "core", "words": ["echo", "one two", "three"]}
+{"input": "cp file\\ name.txt dest", "n": 102, "section": "core", "words": ["cp", "file name.txt", "dest"]}
+{"input": "echo \\a", "n": 103, "section": "core", "words": ["echo", "a"]}
+{"input": "echo x\\ty", "n": 104, "section": "core", "words": ["echo", "xty"]}
+{"input": "\\ls", "n": 105, "section": "core", "words": ["ls"]}
+{"input": "echo héllo wörld", "n": 106, "section": "core", "words": ["echo", "héllo", "wörld"]}
+{"input": "echo \"日本語 テスト\"", "n": 107, "section": "core", "words": ["echo", "日本語 テスト"]}
+{"input": "echo 'Ünïcödé'", "n": 108, "section": "core", "words": ["echo", "Ünïcödé"]}
+{"input": "echo café-naïve", "n": 109, "section": "core", "words": ["echo", "café-naïve"]}
+{"input": "echo \"emoji 🎉 here\"", "n": 110, "section": "core", "words": ["echo", "emoji 🎉 here"]}
+{"input": "echo ✓ ✗", "n": 111, "section": "core", "words": ["echo", "✓", "✗"]}
+{"input": "echo   spaced    out", "n": 112, "section": "core", "words": ["echo", "spaced", "out"]}
+{"input": "\techo leading-tab", "n": 113, "section": "core", "words": ["echo", "leading-tab"]}
+{"input": "echo\ttab\tseparated", "n": 114, "section": "core", "words": ["echo", "tab", "separated"]}
+{"input": "echo a\nb", "n": 115, "section": "core", "words": ["echo", "a", "b"]}
+{"input": "echo \"line1\nline2\"", "n": 116, "section": "core", "words": ["echo", "line1\nline2"]}
+{"input": "echo 'l1\nl2'", "n": 117, "section": "core", "words": ["echo", "l1\nl2"]}
+{"input": "cmd one\ncmd two", "n": 118, "section": "core", "words": ["cmd", "one", "cmd", "two"]}
+{"input": "echo $VAR", "n": 119, "section": "core", "words": ["echo", "$VAR"]}
+{"input": "echo $VAR/path", "n": 120, "section": "core", "words": ["echo", "$VAR/path"]}
+{"input": "echo a$VAR b", "n": 121, "section": "core", "words": ["echo", "a$VAR", "b"]}
+{"input": "echo \"$@\"", "n": 122, "section": "core", "words": ["echo", "$@"]}
+{"input": "echo \"$1 $2\"", "n": 123, "section": "core", "words": ["echo", "$1 $2"]}
+{"input": "echo $-", "n": 124, "section": "core", "words": ["echo", "$-"]}
+{"input": "echo ${#arr}", "n": 125, "section": "core", "words": ["echo", "${#arr}"]}
+{"input": "echo key=value", "n": 126, "section": "core", "words": ["echo", "key=value"]}
+{"input": "FOO=bar echo hi", "n": 127, "section": "core", "words": ["FOO=bar", "echo", "hi"]}
+{"input": "A=1 B=2 env", "n": 128, "section": "core", "words": ["A=1", "B=2", "env"]}
+{"input": "echo --flag=value", "n": 129, "section": "core", "words": ["echo", "--flag=value"]}
+{"input": "echo -- --literal", "n": 130, "section": "core", "words": ["echo", "--", "--literal"]}
+{"input": "echo -n", "n": 131, "section": "core", "words": ["echo", "-n"]}
+{"input": "echo a#b", "n": 132, "section": "core", "words": ["echo", "a#b"]}
+{"input": "echo x#y#z", "n": 133, "section": "core", "words": ["echo", "x#y#z"]}
+{"input": "bash -lc \"echo hi\"", "n": 134, "section": "core", "words": ["bash", "-lc", "echo hi"]}
+{"input": "sh -c 'ls -la'", "n": 135, "section": "core", "words": ["sh", "-c", "ls -la"]}
+{"input": "zsh -ic \"true\"", "n": 136, "section": "core", "words": ["zsh", "-ic", "true"]}
+{"input": "env A=1 B=2 sh", "n": 137, "section": "core", "words": ["env", "A=1", "B=2", "sh"]}
+{"input": "timeout 5 sleep 1", "n": 138, "section": "core", "words": ["timeout", "5", "sleep", "1"]}
+{"input": "sudo -u www ls", "n": 139, "section": "core", "words": ["sudo", "-u", "www", "ls"]}
+{"input": "nohup sleep 100", "n": 140, "section": "core", "words": ["nohup", "sleep", "100"]}
+{"input": "nice -n 10 make", "n": 141, "section": "core", "words": ["nice", "-n", "10", "make"]}
+{"input": "uv run python -m pytest", "n": 142, "section": "core", "words": ["uv", "run", "python", "-m", "pytest"]}
+{"input": "npx prettier --write .", "n": 143, "section": "core", "words": ["npx", "prettier", "--write", "."]}
+{"input": "git -C /repo status", "n": 144, "section": "core", "words": ["git", "-C", "/repo", "status"]}
+{"input": "watch -n 5 df -h", "n": 145, "section": "core", "words": ["watch", "-n", "5", "df", "-h"]}
+{"input": "ssh host \"uptime\"", "n": 146, "section": "core", "words": ["ssh", "host", "uptime"]}
+{"input": "docker run --rm -it alpine sh", "n": 147, "section": "core", "words": ["docker", "run", "--rm", "-it", "alpine", "sh"]}
+{"input": "xargs -0 rm", "n": 148, "section": "core", "words": ["xargs", "-0", "rm"]}
+{"input": "command ls", "n": 149, "section": "core", "words": ["command", "ls"]}
+{"input": "sed -e 's/x/y/' -e 's/a/b/' f", "n": 150, "section": "core", "words": ["sed", "-e", "s/x/y/", "-e", "s/a/b/", "f"]}
+{"input": "awk -F: '{print $1}' /etc/passwd", "n": 151, "section": "core", "words": ["awk", "-F:", "{print $1}", "/etc/passwd"]}
+{"input": "find . -name \"*.zig\"", "n": 152, "section": "core", "words": ["find", ".", "-name", "*.zig"]}
+{"input": "jq -r '.items[] | .name' f.json", "n": 153, "section": "core", "words": ["jq", "-r", ".items[] | .name", "f.json"]}
+{"error": "No closing quotation", "input": "echo \"unterminated", "n": 154, "section": "core"}
+{"error": "No closing quotation", "input": "echo 'unterminated", "n": 155, "section": "core"}
+{"error": "No closing quotation", "input": "echo \"mixed 'quotes", "n": 156, "section": "core"}
+{"error": "No closing quotation", "input": "echo one \"two three", "n": 157, "section": "core"}
+{"error": "No escaped character", "input": "echo trailing\\", "n": 158, "section": "core"}
+{"input": "echo a | grep b", "n": 159, "section": "divergent", "words": ["echo", "a", "|", "grep", "b"]}
+{"input": "ls; pwd", "n": 160, "section": "divergent", "words": ["ls;", "pwd"]}
+{"input": "a && b", "n": 161, "section": "divergent", "words": ["a", "&&", "b"]}
+{"input": "a || b", "n": 162, "section": "divergent", "words": ["a", "||", "b"]}
+{"input": "cat f > out", "n": 163, "section": "divergent", "words": ["cat", "f", ">", "out"]}
+{"input": "cat f >> out", "n": 164, "section": "divergent", "words": ["cat", "f", ">>", "out"]}
+{"input": "cmd 2>&1", "n": 165, "section": "divergent", "words": ["cmd", "2>&1"]}
+{"input": "cmd &> all.log", "n": 166, "section": "divergent", "words": ["cmd", "&>", "all.log"]}
+{"input": "sleep 1 &", "n": 167, "section": "divergent", "words": ["sleep", "1", "&"]}
+{"input": "cmd1 && cmd2 | cmd3", "n": 168, "section": "divergent", "words": ["cmd1", "&&", "cmd2", "|", "cmd3"]}
+{"input": "(cd /x && ls)", "n": 169, "section": "divergent", "words": ["(cd", "/x", "&&", "ls)"]}
+{"input": "{ ls; }", "n": 170, "section": "divergent", "words": ["{", "ls;", "}"]}
+{"input": "echo $(date)", "n": 171, "section": "divergent", "words": ["echo", "$(date)"]}
+{"input": "echo $(date +%s)", "n": 172, "section": "divergent", "words": ["echo", "$(date", "+%s)"]}
+{"input": "echo `hostname`", "n": 173, "section": "divergent", "words": ["echo", "`hostname`"]}
+{"input": "echo \"$(uname -a)\"", "n": 174, "section": "divergent", "words": ["echo", "$(uname -a)"]}
+{"input": "diff <(sort a) <(sort b)", "n": 175, "section": "divergent", "words": ["diff", "<(sort", "a)", "<(sort", "b)"]}
+{"input": "echo $'a\\tb'", "n": 176, "section": "divergent", "words": ["echo", "$a\\tb"]}
+{"input": "echo $'line\\nbreak'", "n": 177, "section": "divergent", "words": ["echo", "$line\\nbreak"]}
+{"input": "echo $'\\x41\\x42'", "n": 178, "section": "divergent", "words": ["echo", "$\\x41\\x42"]}
+{"input": "echo \"a\\$b\"", "n": 179, "section": "divergent", "words": ["echo", "a\\$b"]}
+{"input": "echo \"a\\`b\"", "n": 180, "section": "divergent", "words": ["echo", "a\\`b"]}
+{"input": "echo a\\\nb", "n": 181, "section": "divergent", "words": ["echo", "a\nb"]}
+{"input": "echo \"a\\\nb\"", "n": 182, "section": "divergent", "words": ["echo", "a\\\nb"]}
+{"input": "echo hi # trailing comment", "n": 183, "section": "divergent", "words": ["echo", "hi", "#", "trailing", "comment"]}
+{"input": "cat <<EOF\nbody line\nEOF", "n": 184, "section": "divergent", "words": ["cat", "<<EOF", "body", "line", "EOF"]}
+{"input": "python3 <<PY\nprint(1)\nPY", "n": 185, "section": "divergent", "words": ["python3", "<<PY", "print(1)", "PY"]}
+{"input": "cat <<<\"here string\"", "n": 186, "section": "divergent", "words": ["cat", "<<<here string"]}

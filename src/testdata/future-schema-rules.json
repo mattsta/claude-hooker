@@ -1,0 +1,24 @@
+{
+  "_comment": "NOT a loadable rule file, on purpose. This is what a policy document written by a LATER release of the gate looks like to this one: a schema_version this binary does not speak, plus constructs that do not exist yet (a top-level key, a matcher kind, a group operator, a matcher field). Loading it must fail as RulesFromNewerSchema and exit 78 — NOT as a syntax error, which is how a newer file would otherwise take enforcement down silently. Deliberately absent from hookctl's RULE_FILES: it is not supposed to pass selftest.",
+  "schema_version": "2.0",
+  "default_decision_when_unmatched": "ask",
+  "rules": [
+    {
+      "name": "no-unsandboxed-exec",
+      "decision": "deny",
+      "reason": "A rule from a future release, using matchers this binary has never heard of.",
+      "match": [
+        { "kind": "syscall_family", "value": "exec", "confidence": "high" },
+        {
+          "sequence": [
+            { "kind": "command_word", "value": "curl" },
+            { "kind": "command_word", "value": "sh" }
+          ]
+        }
+      ]
+    }
+  ],
+  "tests": [
+    { "command": "exec /bin/sh", "expect": "deny", "rationale": "a field that does not exist yet" }
+  ]
+}

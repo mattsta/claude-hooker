@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""hookctl — the single runner for claude-hooker.
+
+    ./hookctl setup     build, install and verify the gate
+    ./hookctl doctor    is it actually working?
+    ./hookctl help      every verb, grouped
+    ./hookctl verify    the pre-commit gate
+
+This file is the entry point and nothing else: it puts `tools/` on the import
+path and hands `sys.argv` to the package. Everything — the verb table, the
+resolution of which binary answers a question, every subprocess this tool
+issues — lives in `tools/hookctl/`, whose `__init__.py` is the map to it.
+
+Keeping this file empty of logic is the point. Logic here would be logic that
+only runs when a person types it, and this tool's own tests
+(`./hookctl selfcheck`) would have nothing to hold.
+"""
+
+import sys
+from pathlib import Path
+
+# Checked here, in the one file that must PARSE on any python3 — an old
+# interpreter must be turned away with this message and exit 69, never with a
+# traceback from an import it cannot digest. `tools/hookctl/spec.py` states
+# the same minimum as `MIN_PYTHON`, and the runner's own tests hold the two
+# together by starting this file under the platform interpreter.
+if sys.version_info < (3, 11):
+    sys.stderr.write(
+        f"hookctl needs Python 3.11 or newer (found {sys.version_info[0]}.{sys.version_info[1]}).\n"
+        "Point PATH at a newer python3 (e.g. `brew install python3`, or your\n"
+        "distribution's python3.11+ package) and run ./hookctl again.\n"
+    )
+    raise SystemExit(69)  # EX_UNAVAILABLE
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "tools"))
+
+from hookctl import run  # noqa: E402  (the path insert above has to happen first)
+
+if __name__ == "__main__":
+    raise SystemExit(run(sys.argv[1:]))
